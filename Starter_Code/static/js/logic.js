@@ -13,6 +13,37 @@ function createMap(quakeLocations) {
     zoom: 4,
     layers: [baseMap, quakeLocations],
   });
+
+  let legend = L.control({ position: "bottomright" });
+  legend.onAdd = function () {
+    let div = L.DomUtil.create("div", "info legend");
+    let limits = [-10, 10, 30, 50, 70, 90];
+    let colors = [
+      "#1a9850",
+      "#91cf60",
+      "#d9ef8b",
+      "#fee08b",
+      "#fc8d59",
+      "#d73027",
+    ];
+    let labels = [];
+    div.innerHTML =
+      "<div class='labels'>" +
+      "<div class='label'>-10 - 10</div>" +
+      "<div class='label'>10 - 30</div>" +
+      "<div class='label'>30 - 50</div>" +
+      "<div class='label'>50 - 70</div>" +
+      "<div class='label'>70 - 90</div>" +
+      "<div class='label'>90+</div>" +
+      "</div>";
+    limits.forEach(function (limit, index) {
+      labels.push('<li style="background-color: ' + colors[index] + '"></li>');
+    });
+
+    div.innerHTML += "<ul>" + labels.join("") + "</ul>";
+    return div;
+  };
+  legend.addTo(map);
 }
 
 function quakeColor(depth) {
@@ -29,7 +60,8 @@ function quakeColor(depth) {
     color = "#fc8d59";
   } else {
     color = "#d73027";
-  } return color;
+  }
+  return color;
 }
 
 function createMarkers(response) {
@@ -45,12 +77,13 @@ function createMarkers(response) {
       {
         radius: magnitude * 10000,
         color: quakeColor(quake.geometry.coordinates[2]),
-        weight: .75,
+        weight: 0.75,
         fillColor: quakeColor(quake.geometry.coordinates[2]),
         fillOpacity: 0.5,
       }
     ).bindPopup(`<h3>${quake.properties.title}</h3>
-        <h3>Date & Time: ${new Date(quake.properties.time)}</h3`);
+        <h4>Date & Time: ${new Date(quake.properties.time)}</h4>
+        <h4>Depth: ${magnitude}</h4>`);
 
     quakeMarkers.push(quakeMarker);
     // console.log(quakeMarkers)
@@ -59,5 +92,5 @@ function createMarkers(response) {
 }
 
 d3.json(
-  "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+  "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/1.0_week.geojson"
 ).then(createMarkers);
